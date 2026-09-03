@@ -1,0 +1,42 @@
+@rootURL = http://localhost:5095
+
+GET {{rootURL}}/weatherforecast/
+Accept: application/json
+
+###
+
+GET {{rootURL}}/api/character
+Accept: application/json
+
+###
+
+GET {{rootURL}}/api/character/1
+Accept: application/json
+
+###
+
+POST {{rootURL}}/api/character
+Content-Type: application/json
+
+{
+    "Id" : 5,
+    "Name" : "Mydei",
+    "Planet" : "Amphoreus",
+    "Rating" : 9
+}
+
+###
+
+PUT {{rootURL}}/api/character/1
+Content-Type: application/json
+
+{
+    "Id" : 1,
+    "Name" : "Phainon",
+    "Planet" : "Amphoreus",
+    "Rating" : 10000 
+}
+
+###
+
+DELETE {{rootURL}}/api/character/4
