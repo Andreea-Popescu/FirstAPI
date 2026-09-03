@@ -21,7 +21,7 @@ Content-Type: application/json
 {
     "Id" : 5,
     "Name" : "Mydei",
-    "Planet" : "Amphoreus",
+    "PlanetId" : "1",
     "Rating" : 9
 }
 
@@ -33,10 +33,15 @@ Content-Type: application/json
 {
     "Id" : 1,
     "Name" : "Phainon",
-    "Planet" : "Amphoreus",
-    "Rating" : 10000 
+    "PlanetId" : 1,
+    "Rating" : 67676767 
 }
 
 ###
 
 DELETE {{rootURL}}/api/character/4
+
+###
+
+GET {{rootURL}}/api/character/1/details
+Accept: application/json

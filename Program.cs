@@ -11,6 +11,13 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = 
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    }); // OPTIUNE DE IGNORARE A CICLURILOR
     
 var app = builder.Build();
 
