@@ -34,7 +34,7 @@ Content-Type: application/json
     "Id" : 1,
     "Name" : "Phainon",
     "PlanetId" : 1,
-    "Rating" : 67676767 
+    "Rating" : 10000000 
 }
 
 ###
