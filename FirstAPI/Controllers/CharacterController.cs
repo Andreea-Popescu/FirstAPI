@@ -17,14 +17,6 @@ public class CharacterController : ControllerBase
         _context = context;
     }
 
-    // GET: api/character
-    [HttpGet]
-    public async Task<ActionResult<List<Character>>> GetCharacters()
-    {
-        var characters = await _context.Characters.ToListAsync();
-        return Ok(characters);
-    }
-
     // GET: api/character/1
     [HttpGet("{id}")]
     public async Task<ActionResult<Character>> GetCharacterByID(int id)
@@ -81,7 +73,7 @@ public class CharacterController : ControllerBase
         return NoContent();
     }
 
-
+// GET api/character/id/details
 [HttpGet("{id}/details")]
 public async Task <ActionResult<CharacterResponseDTO>> ShowDetailsCharacter(int id)
     {
@@ -116,4 +108,28 @@ public async Task <ActionResult<CharacterResponseDTO>> ShowDetailsCharacter(int 
 
         return Ok(response);
     }
+
+
+// GET: api/character
+[HttpGet]
+public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
+{
+    var characters = await _context.Characters
+        .Include(c => c.Planet) // JOIN cu tabela Planets pentru toată lista
+        .ToListAsync();
+
+    // Mapăm fiecare personaj din listă către CharacterResponseDTO
+    var response = characters.Select(character => new CharacterResponseDTO
+    {
+        Name = character.Name,
+        Rating = character.Rating,
+        Planet = character.Planet == null ? null : new PlanetResponseDTO
+        {
+            Name = character.Planet.Name,
+            Description = character.Planet.Description
+        }
+    }).ToList();
+
+    return Ok(response);
+}
 }

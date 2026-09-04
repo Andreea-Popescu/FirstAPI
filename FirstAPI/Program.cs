@@ -19,7 +19,20 @@ builder.Services.AddControllers()
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     }); // OPTIUNE DE IGNORARE A CICLURILOR
     
+// CORS - Cross-Origin Resource Sharing
+// Origine = Protocol + Domeniu + Port | In cazu nostru, avem cross-origin pt ca port-urile de backend si frontend difera
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazor", policy =>
+    {
+        policy.AllowAnyOrigin() // Permite oricarui site
+              .AllowAnyMethod() // Permite GET,POST,PUT,DELETE,ETC
+              .AllowAnyHeader(); // Permite JSON, etc.
+    });
+});
 var app = builder.Build();
+
+app.UseCors("AllowBlazor"); // ii zicem sa permita cors pt blazor frontend
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

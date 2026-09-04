@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FirstAPI/FirstAPI.csproj" />
+  <Project Path="FirstUI/FirstUI.csproj" />
+</Solution>
