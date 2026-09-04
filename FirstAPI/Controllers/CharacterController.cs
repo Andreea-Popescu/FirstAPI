@@ -18,7 +18,7 @@ public class CharacterController : ControllerBase
     }
 
     // GET: api/character/1
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<Character>> GetCharacterByID(int id)
     {
         var character = await _context.Characters.FindAsync(id);
@@ -28,22 +28,8 @@ public class CharacterController : ControllerBase
         return Ok(character);
     }
 
-    // POST: api/character
-    [HttpPost]
-    public async Task<ActionResult<Character>> AddCharacter([FromBody] Character newCharacter)
-    {
-        if (newCharacter == null)
-            return BadRequest();
-
-        // Salvează în tabelul SQLite
-        _context.Characters.Add(newCharacter);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetCharacterByID), new { id = newCharacter.Id }, newCharacter);
-    }
-
     // PUT: api/character/1
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateCharacter(int id, [FromBody] Character updatedCharacter)
     {
         var character = await _context.Characters.FindAsync(id);
@@ -60,7 +46,7 @@ public class CharacterController : ControllerBase
     }
 
     // DELETE: api/character/1
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteCharacter(int id)
     {
         var character = await _context.Characters.FindAsync(id);
@@ -74,7 +60,7 @@ public class CharacterController : ControllerBase
     }
 
 // GET api/character/id/details
-[HttpGet("{id}/details")]
+[HttpGet("{id:int}/details")]
 public async Task <ActionResult<CharacterResponseDTO>> ShowDetailsCharacter(int id)
     {
         var character = await _context.Characters // Vreau sa interoghez tabela Characters
@@ -132,4 +118,51 @@ public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
 
     return Ok(response);
 }
+
+
+// POST: api/character/add
+[HttpPost]
+public async Task<ActionResult<CharacterResponseDTO>> CreateCharacter (CreateCharacterDTO request)
+    {
+        var planet = await _context.Planets.FindAsync(request.planetId); // exista planeta ceruta?
+        if (planet == null)
+        {
+            return BadRequest("Nu exista planeta asta wtf");
+        }
+
+        var newCharacter = new Character // daca planeta exista, cream un nou ob caracter cu atributele date de user
+        {
+            Name = request.Name,
+            Rating = request.Rating,
+            PlanetId = request.planetId
+        };
+
+        _context.Characters.Add(newCharacter); // incarcam in context pt tabela characters noul caracter
+        await _context.SaveChangesAsync(); // trimitem in tabela
+
+        var response = new CharacterResponseDTO // returneaza caracterul adaugat
+        {
+            Name = newCharacter.Name,
+            Rating = newCharacter.Rating,
+            Planet = new PlanetResponseDTO // fiind characterresponsedto include planetresponsedto
+            {
+                Name = planet.Name,
+                Description = planet.Description
+            }
+        };
+
+        return Ok(response);
+    }
+
+// GET pt planete: api/character/planets
+[HttpGet("planets")]
+public async Task<ActionResult<List<Planet>>> GetPlanets ()
+    {
+        var planets = await _context.Planets.ToListAsync();
+        if (planets == null)
+        {
+            return NotFound();
+        }
+        return Ok(planets);
+    }
 }

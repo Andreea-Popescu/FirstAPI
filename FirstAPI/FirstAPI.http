@@ -39,9 +39,14 @@ Content-Type: application/json
 
 ###
 
-DELETE {{rootURL}}/api/character/4
+DELETE {{rootURL}}/api/character/5
 
 ###
 
 GET {{rootURL}}/api/character/1/details
+Accept: application/json
+
+###
+
+GET {{rootURL}}/api/character/planets
 Accept: application/json
