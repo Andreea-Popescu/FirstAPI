@@ -21,6 +21,9 @@ else
                 <hr style="border: 0; border-top: 1px solid #eee;" />
                 <p style="margin-bottom: 4px;"><strong>Planetă:</strong> @(c.Planet?.Name ?? "Necunoscută")</p>
                 <small style="color: #666;">@(c.Planet?.Description ?? "Fără descriere")</small>
+                <div style="margin-top: 12px;">
+                <button class="btn btn-danger" @onclick="() => DeleteCharacter(c.Id)">Șterge</button>
+                </div>
             </div>
         }
     </div>
@@ -41,4 +44,14 @@ else
             Console.WriteLine($"Eroare la apel API: {ex.Message}");
         }
     }
+
+    private async Task DeleteCharacter(int id)
+    {
+        var response = await Http.DeleteAsync($"http://localhost:5095/api/character/{id}");
+        if( response.IsSuccessStatusCode)
+        {
+            characters?.RemoveAll(c => c.Id == id);
+        }
+    }
+     
 }

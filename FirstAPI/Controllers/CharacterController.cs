@@ -45,7 +45,7 @@ public class CharacterController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: api/character/1
+    // DELETE: api/character/1 stergere caracter
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteCharacter(int id)
     {
@@ -108,6 +108,7 @@ public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
     // Mapăm fiecare personaj din listă către CharacterResponseDTO
     var response = characters.Select(character => new CharacterResponseDTO
     {
+        Id = character.Id,
         Name = character.Name,
         Rating = character.Rating,
         ElementName = character.Element != null ? character.Element.Name : "Necunoscut",        
