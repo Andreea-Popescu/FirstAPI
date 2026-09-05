@@ -1,0 +1,122 @@
+@page "/edit-character/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>Editează Personajul</h3>
+
+@if (isLoading)
+{
+    <p>Se încarcă datele...</p>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    <EditForm Model="characterModel" OnValidSubmit="HandleUpdate">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <!-- Câmpul Nume -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Nume:</label>
+            <InputText class="form-control" @bind-Value="characterModel.Name" />
+        </div>
+
+        <!-- Câmpul Rating -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Rating:</label>
+            <InputNumber class="form-control" @bind-Value="characterModel.Rating" />
+        </div>
+
+        <!-- Dropdown Planetă -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Planetă:</label>
+            <InputSelect class="form-control" @bind-Value="characterModel.PlanetId">
+                <option value="0">-- Alege o planetă --</option>
+                @if (planets != null)
+                {
+                    @foreach (var p in planets)
+                    {
+                        <option value="@p.Id">@p.Name</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+
+        <!-- Dropdown Element -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Element:</label>
+            <InputSelect class="form-control" @bind-Value="characterModel.ElementId">
+                <option value="0">-- Alege un element --</option>
+                @if (elements != null)
+                {
+                    @foreach (var el in elements)
+                    {
+                        <option value="@el.Id">@el.Name</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+
+        <button type="submit" class="btn btn-success">Salvează Modificările</button>
+        <a href="/" class="btn btn-secondary ms-2">Anulează</a>
+    </EditForm>
+}
+
+
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; } // Parametru de pagina, Blazor citeste id-ul din link si il stocheaza in aceasta variabila
+    private CreateCharacterDTO characterModel = new();
+
+    private List<PlanetDTO>? planets;
+    private List<ElementDTO>? elements;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // incarcam listele pt dropdowns
+            planets = await Http.GetFromJsonAsync<List<PlanetDTO>>("http://localhost:5095/api/character/planets");
+            elements = await Http.GetFromJsonAsync<List<ElementDTO>>("http://localhost:5095/api/character/elements");
+
+            // incarcam personajul existent cu noul endpoint GET /api/character/id
+            var existingCharacter = await Http.GetFromJsonAsync<CreateCharacterDTO>($"http://localhost:5095/api/character/{Id}");
+
+            if (existingCharacter != null)
+            {
+                characterModel = existingCharacter;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Eroare: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleUpdate()
+    {
+        // 1. Trimite cererea PUT cu datele actualizate către endpoint-ul din controller
+        var response = await Http.PutAsJsonAsync($"http://localhost:5095/api/character/{Id}", characterModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // 2. Dacă salvarea a reușit, redirecționează utilizatorul pe pagina principală
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "A apărut o problemă la actualizarea personajului.";
+        }
+    }
+}

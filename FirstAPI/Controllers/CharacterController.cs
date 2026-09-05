@@ -19,29 +19,60 @@ public class CharacterController : ControllerBase
 
     // GET: api/character/1
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Character>> GetCharacterByID(int id)
+    public async Task<ActionResult<CreateCharacterDTO>> GetCharacterByID(int id)
     {
         var character = await _context.Characters.FindAsync(id);
         if (character == null)
+        {
             return NotFound();
+        }
 
-        return Ok(character);
+        var dto = new CreateCharacterDTO
+
+        {
+            Name = character.Name,
+            Rating = character.Rating,
+            planetId = character.PlanetId,
+            ElementId = character.ElementId
+        };
+
+        return Ok(dto);
     }
 
     // PUT: api/character/1
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateCharacter(int id, [FromBody] Character updatedCharacter)
+    public async Task<IActionResult> UpdateCharacter(int id, [FromBody] CreateCharacterDTO updatedCharacter)
     {
+        // 1. Găsește caracterul existent în baza de date
         var character = await _context.Characters.FindAsync(id);
         if (character == null)
-            return NotFound();
+        {
+            return NotFound("Personajul nu a fost găsit.");
+        }
 
+        // 2. Verifică dacă noua planetă și noul element există
+        var planetExists = await _context.Planets.AnyAsync(p => p.Id == updatedCharacter.planetId);
+        if (!planetExists)
+        {
+            return BadRequest("Planeta specificată nu există.");
+        }
+
+        var elementExists = await _context.Elements.AnyAsync(e => e.Id == updatedCharacter.ElementId);
+        if (!elementExists)
+        {
+            return BadRequest("Elementul specificat nu există.");
+        }
+
+        // 3. Actualizează câmpurile entității existente cu datele din DTO
         character.Name = updatedCharacter.Name;
-        character.Planet = updatedCharacter.Planet;
         character.Rating = updatedCharacter.Rating;
+        character.PlanetId = updatedCharacter.planetId;
+        character.ElementId = updatedCharacter.ElementId;
 
+        // 4. Salvează modificările în SQLite
         await _context.SaveChangesAsync();
 
+        // 5. Răspunde cu succes (204 No Content este standardul pentru PUT)
         return NoContent();
     }
 
