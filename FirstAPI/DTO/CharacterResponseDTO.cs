@@ -1,3 +1,5 @@
+using FirstAPI.models;
+
 namespace FirstAPI.DTO;
 
 public class CharacterResponseDTO
@@ -8,4 +10,5 @@ public class CharacterResponseDTO
         public PlanetResponseDTO? Planet { get; set; } 
 
         public int Rating { get; set; }
-}
+        public string ElementName { get; set; } = null!;
+        }

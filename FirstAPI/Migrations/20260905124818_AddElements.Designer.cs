@@ -2,6 +2,7 @@
 using FirstAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260905124818_AddElements")]
+    partial class AddElements
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
@@ -172,24 +175,6 @@ namespace FirstAPI.Migrations
                             Id = 4,
                             Description = "Alliance Flagship",
                             Name = "Xianzhou"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Description = "Frozen Leadership",
-                            Name = "Belobog"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Description = "Geniuses Greetings",
-                            Name = "Herta Space Station"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Description = "Path of Trailblazing",
-                            Name = "Astral Express"
                         });
                 });
 

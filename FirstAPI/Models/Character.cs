@@ -5,6 +5,8 @@ namespace FirstAPI.models
         public int Id { get; set; }
 
         public string Name { get; set; } = null!;
+        public int ElementId {get; set;}
+        public Element? Element {get; set; }
 
         public int PlanetId { get; set; } // Cheia externa pt cheia primara Id din Planeta, aparent EF recunoaste ca e cheia externa
                                             // pt Planet din faptu ca se potrivesc la nume (wow) - basically asta folosim pt join

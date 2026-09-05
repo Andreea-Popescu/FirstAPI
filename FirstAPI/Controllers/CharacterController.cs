@@ -102,6 +102,7 @@ public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
 {
     var characters = await _context.Characters
         .Include(c => c.Planet) // JOIN cu tabela Planets pentru toată lista
+        .Include (c => c.Element) 
         .ToListAsync();
 
     // Mapăm fiecare personaj din listă către CharacterResponseDTO
@@ -109,6 +110,7 @@ public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
     {
         Name = character.Name,
         Rating = character.Rating,
+        ElementName = character.Element != null ? character.Element.Name : "Necunoscut",        
         Planet = character.Planet == null ? null : new PlanetResponseDTO
         {
             Name = character.Planet.Name,
@@ -129,12 +131,18 @@ public async Task<ActionResult<CharacterResponseDTO>> CreateCharacter (CreateCha
         {
             return BadRequest("Nu exista planeta asta wtf");
         }
+        var element = await _context.Elements.FindAsync(request.ElementId); // exista elementul cerut?
+        if (element == null)
+        {
+            return BadRequest("Nu exista elementul");
+        }
 
-        var newCharacter = new Character // daca planeta exista, cream un nou ob caracter cu atributele date de user
+        var newCharacter = new Character // cream un nou ob caracter cu atributele date de user
         {
             Name = request.Name,
             Rating = request.Rating,
-            PlanetId = request.planetId
+            PlanetId = request.planetId,
+            ElementId = request.ElementId
         };
 
         _context.Characters.Add(newCharacter); // incarcam in context pt tabela characters noul caracter
@@ -148,7 +156,8 @@ public async Task<ActionResult<CharacterResponseDTO>> CreateCharacter (CreateCha
             {
                 Name = planet.Name,
                 Description = planet.Description
-            }
+            },
+            ElementName = element.Name
         };
 
         return Ok(response);
@@ -164,5 +173,17 @@ public async Task<ActionResult<List<Planet>>> GetPlanets ()
             return NotFound();
         }
         return Ok(planets);
+    }
+
+// GET pt elemente: api/character/elements
+[HttpGet("elements")]
+public async Task<ActionResult<List<Element>>> GetElements ()
+    {
+        var elements = await _context.Elements.ToListAsync();
+        if (elements == null)
+        {
+            return NotFound();
+        }
+        return Ok(elements);
     }
 }

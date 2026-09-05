@@ -35,6 +35,20 @@
         </InputSelect>
     </div>
 
+    <div style="margin-bottom: 16px; max-width: 320px;">
+    <label>Element:</label>
+    <InputSelect class="form-control" @bind-Value="newCharacter.ElementId">
+        <option value="0">-- Alege un element --</option>
+        @if (elements != null)
+        {
+            @foreach (var el in elements)
+            {
+                <option value="@el.Id">@el.Name</option>
+            }
+        }
+    </InputSelect>
+</div>
+
     <button type="submit" class="btn btn-primary" style="padding: 8px 16px; cursor: pointer;">
         Salvează Personaj
     </button>
@@ -43,6 +57,7 @@
 @code {
     private CreateCharacterDTO newCharacter = new();
     private List<PlanetDTO>? planets;
+    private List<ElementDTO>? elements;
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,10 +65,11 @@
         {
             // Portul HTTP al API-ului tău (5095)
             planets = await Http.GetFromJsonAsync<List<PlanetDTO>>("http://localhost:5095/api/character/planets");
+            elements = await Http.GetFromJsonAsync<List<ElementDTO>>(requestUri: "http://localhost:5095/api/character/elements");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Nu s-au putut încărca planetele: {ex.Message}");
+            Console.WriteLine($"Eroare: {ex.Message}");
         }
     }
 

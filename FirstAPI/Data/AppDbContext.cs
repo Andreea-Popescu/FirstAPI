@@ -13,6 +13,16 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Element>().HasData(
+            new Element { Id = 1, Name = "Physical" },
+            new Element { Id = 2, Name = "Fire" },
+            new Element { Id = 3, Name = "Ice" },
+            new Element { Id = 4, Name = "Lightning" },
+            new Element { Id = 5, Name = "Wind" },
+            new Element { Id = 6, Name = "Quantum" },
+            new Element { Id = 7, Name = "Imaginary" }
+        );
+
         modelBuilder.Entity<Planet>().HasData( // hardcoded date in tabele lol
             new Planet
             {
@@ -37,6 +47,24 @@ public class AppDbContext : DbContext
                 Id = 4,
                 Name = "Xianzhou",
                 Description = "Alliance Flagship"
+            },
+            new Planet
+            {
+                Id = 5,
+                Name = "Belobog",
+                Description = "Frozen Leadership"
+            },
+            new Planet
+            {
+                Id = 6,
+                Name = "Herta Space Station",
+                Description = "Geniuses Greetings"
+            },
+            new Planet
+            {
+                Id = 7,
+                Name = "Astral Express",
+                Description = "Path of Trailblazing"
             }
         );
 
@@ -46,31 +74,36 @@ public class AppDbContext : DbContext
             Id = 1,
             Name = "Phainon",
             PlanetId = 1,
-            Rating = 100
+            Rating = 100,
+            ElementId = 1
         },
         new Character
         {
             Id = 2,
             Name = "Sunday",
             PlanetId = 2,
-            Rating = 8
+            Rating = 8,
+            ElementId = 7
         },
         new Character
         {
             Id = 3,
             Name = "Sparxie",
             PlanetId = 3,
-            Rating = 1
+            Rating = 1,
+            ElementId = 2
         },
         new Character
         {
             Id = 4,
             Name = "Fugue",
             PlanetId = 4,
-            Rating = 7
+            Rating = 7,
+            ElementId = 2
         }
         );
     }
     public DbSet<Character> Characters => Set<Character>();
     public DbSet<Planet> Planets => Set<Planet>(); // asa cream tabele
+    public DbSet<Element> Elements => Set<Element>();
 }
