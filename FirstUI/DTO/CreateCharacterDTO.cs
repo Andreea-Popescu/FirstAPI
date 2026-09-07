@@ -15,6 +15,10 @@ public class CreateCharacterDTO
 
     [Range(1, int.MaxValue, ErrorMessage = "Selectează un element.")]
     public int ElementId { get; set; }
+
+    [Range(1, int.MaxValue, ErrorMessage = "Selectează un Path.")]
+    public int PathId { get; set; }
 }
+
 
 // model pt formular

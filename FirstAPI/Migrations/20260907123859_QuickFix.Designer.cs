@@ -2,6 +2,7 @@
 using FirstAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FirstAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260907123859_QuickFix")]
+    partial class QuickFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
@@ -32,6 +35,9 @@ namespace FirstAPI.Migrations
                     b.Property<int>("PathId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("PathhId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("PlanetId")
                         .HasColumnType("INTEGER");
 
@@ -42,7 +48,7 @@ namespace FirstAPI.Migrations
 
                     b.HasIndex("ElementId");
 
-                    b.HasIndex("PathId");
+                    b.HasIndex("PathhId");
 
                     b.HasIndex("PlanetId");
 
@@ -155,12 +161,15 @@ namespace FirstAPI.Migrations
                     b.Property<int>("PathId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("PathhId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Rarity")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PathId");
+                    b.HasIndex("PathhId");
 
                     b.ToTable("Lightcones");
 
@@ -183,7 +192,7 @@ namespace FirstAPI.Migrations
                         });
                 });
 
-            modelBuilder.Entity("FirstAPI.models.Path", b =>
+            modelBuilder.Entity("FirstAPI.models.Pathh", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -237,11 +246,6 @@ namespace FirstAPI.Migrations
                         {
                             Id = 8,
                             Name = "Elation"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Name = "Rememberance"
                         });
                 });
 
@@ -316,11 +320,9 @@ namespace FirstAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FirstAPI.models.Path", "Path")
+                    b.HasOne("FirstAPI.models.Pathh", "Pathh")
                         .WithMany()
-                        .HasForeignKey("PathId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PathhId");
 
                     b.HasOne("FirstAPI.models.Planet", "Planet")
                         .WithMany("Characters")
@@ -330,20 +332,18 @@ namespace FirstAPI.Migrations
 
                     b.Navigation("Element");
 
-                    b.Navigation("Path");
+                    b.Navigation("Pathh");
 
                     b.Navigation("Planet");
                 });
 
             modelBuilder.Entity("FirstAPI.models.Lightcone", b =>
                 {
-                    b.HasOne("FirstAPI.models.Path", "Path")
+                    b.HasOne("FirstAPI.models.Pathh", "Pathh")
                         .WithMany()
-                        .HasForeignKey("PathId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PathhId");
 
-                    b.Navigation("Path");
+                    b.Navigation("Pathh");
                 });
 
             modelBuilder.Entity("FirstAPI.models.Planet", b =>

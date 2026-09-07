@@ -12,4 +12,6 @@ public class CharacterResponseDTO
 
         public int Rating { get; set; }
         public string ElementName { get; set; } = null!;
+
+        public string PathName {get; set; } = null!;
         }

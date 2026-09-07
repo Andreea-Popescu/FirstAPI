@@ -1,0 +1,59 @@
+@page "/lightcones"
+@inject HttpClient Http
+
+<PageTitle>Lightcones!</PageTitle>
+
+<h1>Hello, again!</h1>
+
+@if (lightcones == null)
+{
+    <p><em>Se încarcă datele...</em></p>
+}
+else
+{
+    <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px;">
+        @foreach (var lc in lightcones)
+        {
+            <div style="border: 1px solid #ddd; border-radius: 10px; padding: 16px; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background-color: #fff;">
+                <h3 style="margin-top: 0;">@lc.Name</h3> 
+                <p><strong>Rarity:</strong> @lc.Rarity</p>
+                <p><strong>Path:</strong> @lc.PathName</p>
+                <p><strong>Base Atk:</strong> @lc.BaseAtk</p>
+                <div style="margin-top: 12px;">
+                <button class="btn btn-danger" @onclick="() => DeleteLightcone(lc.Id)">Șterge</button>
+                </div>
+                <div style="margin-top: 12px;">
+                <a href="/edit-lightcone/@lc.Id" class="btn btn-primary">Editează</a>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+
+
+@code {
+    private List<LightconeResponseDTO>? lightcones; // 
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            lightcones = await Http.GetFromJsonAsync<List<LightconeResponseDTO>>("http://localhost:5095/api/lightcone");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Eroare la apel API: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteLightcone(int id)
+    {
+        var response = await Http.DeleteAsync($"http://localhost:5095/api/lightcone/{id}");
+        if( response.IsSuccessStatusCode)
+        {
+            lightcones?.RemoveAll(lc => lc.Id == id);
+        }
+    }
+}

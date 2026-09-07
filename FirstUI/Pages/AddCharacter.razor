@@ -49,6 +49,20 @@
     </InputSelect>
 </div>
 
+    <div style="margin-bottom: 16px; max-width: 320px;">
+    <label>Path:</label>
+    <InputSelect class="form-control" @bind-Value="newCharacter.PathId">
+        <option value="0">-- Alege un path --</option>
+        @if (paths != null)
+        {
+            @foreach (var ph in paths)
+            {
+                <option value="@ph.Id">@ph.Name</option>
+            }
+        }
+    </InputSelect>
+</div>
+
     <button type="submit" class="btn btn-primary" style="padding: 8px 16px; cursor: pointer;">
         Salvează Personaj
     </button>
@@ -58,6 +72,8 @@
     private CreateCharacterDTO newCharacter = new();
     private List<PlanetDTO>? planets;
     private List<ElementDTO>? elements;
+    
+    private List <PathDTO>? paths;
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,6 +82,7 @@
             // Portul HTTP al API-ului tău (5095)
             planets = await Http.GetFromJsonAsync<List<PlanetDTO>>("http://localhost:5095/api/character/planets");
             elements = await Http.GetFromJsonAsync<List<ElementDTO>>(requestUri: "http://localhost:5095/api/character/elements");
+            paths = await Http.GetFromJsonAsync<List<PathDTO>>("http://localhost:5095/api/lightcone/paths");
         }
         catch (Exception ex)
         {

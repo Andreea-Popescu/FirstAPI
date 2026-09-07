@@ -60,6 +60,21 @@ else
             </InputSelect>
         </div>
 
+        <!-- Dropdown Path -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Path:</label>
+            <InputSelect class="form-control" @bind-Value="characterModel.PathId">
+                <option value="0">-- Alege un path --</option>
+                @if (paths != null)
+                {
+                    @foreach (var ph in paths)
+                    {
+                        <option value="@ph.Id">@ph.Name</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+
         <button type="submit" class="btn btn-success">Salvează Modificările</button>
         <a href="/" class="btn btn-secondary ms-2">Anulează</a>
     </EditForm>
@@ -75,6 +90,8 @@ else
 
     private List<PlanetDTO>? planets;
     private List<ElementDTO>? elements;
+    
+    private List <PathDTO>? paths;
     private bool isLoading = true;
     private string? errorMessage;
 
@@ -85,6 +102,8 @@ else
             // incarcam listele pt dropdowns
             planets = await Http.GetFromJsonAsync<List<PlanetDTO>>("http://localhost:5095/api/character/planets");
             elements = await Http.GetFromJsonAsync<List<ElementDTO>>("http://localhost:5095/api/character/elements");
+            paths = await Http.GetFromJsonAsync<List<PathDTO>>("http://localhost:5095/api/lightcone/paths");
+
 
             // incarcam personajul existent cu noul endpoint GET /api/character/id
             var existingCharacter = await Http.GetFromJsonAsync<CreateCharacterDTO>($"http://localhost:5095/api/character/{Id}");

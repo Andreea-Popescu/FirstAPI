@@ -33,13 +33,14 @@ public class CharacterController : ControllerBase
             Name = character.Name,
             Rating = character.Rating,
             planetId = character.PlanetId,
-            ElementId = character.ElementId
+            ElementId = character.ElementId,
+            PathId = character.PathId
         };
 
         return Ok(dto);
     }
 
-    // PUT: api/character/1
+    // PUT: api/character/id
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateCharacter(int id, [FromBody] CreateCharacterDTO updatedCharacter)
     {
@@ -63,11 +64,18 @@ public class CharacterController : ControllerBase
             return BadRequest("Elementul specificat nu există.");
         }
 
+        var pathExists = await _context.Paths.AnyAsync(h => h.Id == updatedCharacter.PathId);
+        if (!pathExists)
+        {
+            return BadRequest("Path-ul specificat nu există.");
+        }
+
         // 3. Actualizează câmpurile entității existente cu datele din DTO
         character.Name = updatedCharacter.Name;
         character.Rating = updatedCharacter.Rating;
         character.PlanetId = updatedCharacter.planetId;
         character.ElementId = updatedCharacter.ElementId;
+        character.PathId = updatedCharacter.PathId;
 
         // 4. Salvează modificările în SQLite
         await _context.SaveChangesAsync();
@@ -134,6 +142,7 @@ public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
     var characters = await _context.Characters
         .Include(c => c.Planet) // JOIN cu tabela Planets pentru toată lista
         .Include (c => c.Element) 
+        .Include (c => c.Path) // join cu tabela Paths (ob Pathh)
         .ToListAsync();
 
     // Mapăm fiecare personaj din listă către CharacterResponseDTO
@@ -142,7 +151,8 @@ public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
         Id = character.Id,
         Name = character.Name,
         Rating = character.Rating,
-        ElementName = character.Element != null ? character.Element.Name : "Necunoscut",        
+        ElementName = character.Element != null ? character.Element.Name : "Necunoscut",   
+        PathName = character.Path != null ? character.Path.Name : "Unknown",     
         Planet = character.Planet == null ? null : new PlanetResponseDTO
         {
             Name = character.Planet.Name,
@@ -154,7 +164,7 @@ public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
 }
 
 
-// POST: api/character/add
+// POST: api/character
 [HttpPost]
 public async Task<ActionResult<CharacterResponseDTO>> CreateCharacter (CreateCharacterDTO request)
     {
@@ -169,12 +179,19 @@ public async Task<ActionResult<CharacterResponseDTO>> CreateCharacter (CreateCha
             return BadRequest("Nu exista elementul");
         }
 
+        var path = await _context.Paths.FindAsync(request.PathId); 
+        if (path == null)
+        {
+            return BadRequest("Nu exista Path-ul lol");
+        }
+
         var newCharacter = new Character // cream un nou ob caracter cu atributele date de user
         {
             Name = request.Name,
             Rating = request.Rating,
             PlanetId = request.planetId,
-            ElementId = request.ElementId
+            ElementId = request.ElementId,
+            PathId = request.PathId
         };
 
         _context.Characters.Add(newCharacter); // incarcam in context pt tabela characters noul caracter
@@ -189,7 +206,8 @@ public async Task<ActionResult<CharacterResponseDTO>> CreateCharacter (CreateCha
                 Name = planet.Name,
                 Description = planet.Description
             },
-            ElementName = element.Name
+            ElementName = element.Name,
+            PathName = path.Name
         };
 
         return Ok(response);

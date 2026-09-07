@@ -1,0 +1,85 @@
+@page "/add-lightcone"
+@using FirstUI.DTO
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Adaugă Lightcone</PageTitle>
+
+<h2>Adaugă un Lightcone Nou</h2>
+
+<EditForm Model="@newLightcone" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div style="margin-bottom: 12px; max-width: 320px;">
+        <label>Nume:</label>
+        <InputText class="form-control" @bind-Value="newLightcone.Name" />
+    </div>
+
+    <div style="margin-bottom: 12px; max-width: 320px;">
+        <label>Rarity:</label>
+        <InputNumber class="form-control" @bind-Value="newLightcone.Rarity" />
+    </div>
+
+    <div style="margin-bottom: 12px; max-width: 320px;">
+        <label>Base ATK:</label>
+        <InputNumber class="form-control" @bind-Value="newLightcone.BaseAtk" />
+    </div>
+
+    <div style="margin-bottom: 16px; max-width: 320px;">
+        <label>Path:</label>
+        <InputSelect class="form-control" @bind-Value="newLightcone.PathId">
+            <option value="0">-- Alege un path --</option>
+            @if (paths != null)
+            {
+                @foreach (var p in paths)
+                {
+                    <option value="@p.Id">@p.Name</option>
+                }
+            }
+        </InputSelect>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="padding: 8px 16px; cursor: pointer;">
+        Salvează Lightcone
+    </button>
+</EditForm>
+
+@code {
+    private CreateLightconeDTO newLightcone = new();
+    private List <PathDTO>? paths;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            paths = await Http.GetFromJsonAsync<List<PathDTO>>("http://localhost:5095/api/lightcone/paths");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Eroare: {ex.Message}");
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("http://localhost:5095/api/lightcone", newLightcone);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Redirecționează utilizatorul înapoi pe pagina principală pentru a vedea cardul nou
+                Navigation.NavigateTo("/lightcones");
+            }
+            else
+            {
+                Console.WriteLine("Eroare la salvare în API.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Eroare HTTP: {ex.Message}");
+        }
+    }
+}

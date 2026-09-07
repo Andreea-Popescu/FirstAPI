@@ -1,0 +1,111 @@
+@page "/edit-lightcone/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>Editează Lightcone</h3>
+
+@if (isLoading)
+{
+    <p>Se încarcă datele...</p>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    <EditForm Model="lightconeModel" OnValidSubmit="HandleUpdate">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <!-- Câmpul Nume -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Nume:</label>
+            <InputText class="form-control" @bind-Value="lightconeModel.Name" />
+        </div>
+
+        <!-- Câmpul Rarity -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Rarity:</label>
+            <InputNumber class="form-control" @bind-Value="lightconeModel.Rarity" />
+        </div>
+
+        <!-- Câmpul Base atk -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Base ATK:</label>
+            <InputNumber class="form-control" @bind-Value="lightconeModel.BaseAtk" />
+        </div>
+
+
+        <!-- Dropdown path -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Path:</label>
+            <InputSelect class="form-control" @bind-Value="lightconeModel.PathId">
+                <option value="0">-- Alege un path --</option>
+                @if (paths != null)
+                {
+                    @foreach (var p in paths)
+                    {
+                        <option value="@p.Id">@p.Name</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+
+
+        <button type="submit" class="btn btn-success">Salvează Modificările</button>
+        <a href="/" class="btn btn-secondary ms-2">Anulează</a>
+    </EditForm>
+}
+
+
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; } // Parametru de pagina, Blazor citeste id-ul din link si il stocheaza in aceasta variabila
+    private CreateLightconeDTO lightconeModel = new();
+    private List <PathDTO>? paths;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            paths = await Http.GetFromJsonAsync<List<PathDTO>>("http://localhost:5095/api/lightcone/paths");
+
+
+            // incarcam personajul existent cu noul endpoint GET /api/character/id
+            var existingLightcone = await Http.GetFromJsonAsync<CreateLightconeDTO>($"http://localhost:5095/api/lightcone/{Id}");
+
+            if (existingLightcone != null)
+            {
+                lightconeModel = existingLightcone;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Eroare: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleUpdate()
+    {
+ 
+        var response = await Http.PutAsJsonAsync($"http://localhost:5095/api/lightcone/{Id}", lightconeModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/lightcones");
+        }
+        else
+        {
+            errorMessage = "A apărut o problemă la actualizarea personajului.";
+        }
+    }
+}

@@ -17,6 +17,9 @@ namespace FirstAPI.models
                                             // Semnul ? -> proprietatea poate fi nullable (spre ex, caracterul nu are o planeta)
 
         public int Rating { get; set; }
+
+        public int PathId {get; set;}
+        public Path? Path {get; set;}
     }
 }
 

@@ -1,3 +1,4 @@
+using Path = FirstAPI.models.Path;
 using FirstAPI.models;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +22,24 @@ public class AppDbContext : DbContext
             new Element { Id = 5, Name = "Wind" },
             new Element { Id = 6, Name = "Quantum" },
             new Element { Id = 7, Name = "Imaginary" }
+        );
+
+        modelBuilder.Entity<Path>().HasData(
+            new Path { Id = 1, Name = "Destruction"},
+            new Path { Id = 2, Name = "Hunt"},
+            new Path { Id = 3, Name = "Erudition"},
+            new Path { Id = 4, Name = "Harmony"},
+            new Path { Id = 5, Name = "Nihility"},
+            new Path { Id = 6, Name = "Preservation"},
+            new Path { Id = 7, Name = "Abundance"},
+            new Path { Id = 8, Name = "Elation"},
+            new Path { Id = 9, Name = "Rememberance"}
+        );
+
+        modelBuilder.Entity<Lightcone>().HasData(
+            new Lightcone { Id = 1, Name = "Thus Burns The Dawn", Rarity = 5, BaseAtk = 687, PathId = 1},
+            new Lightcone { Id = 2, Name = "A Grounded Ascent", Rarity = 5, BaseAtk = 476, PathId = 4}
+
         );
 
         modelBuilder.Entity<Planet>().HasData( // hardcoded date in tabele lol
@@ -75,7 +94,8 @@ public class AppDbContext : DbContext
             Name = "Phainon",
             PlanetId = 1,
             Rating = 100,
-            ElementId = 1
+            ElementId = 1,
+            PathId = 1
         },
         new Character
         {
@@ -83,7 +103,8 @@ public class AppDbContext : DbContext
             Name = "Sunday",
             PlanetId = 2,
             Rating = 8,
-            ElementId = 7
+            ElementId = 7,
+            PathId = 4
         },
         new Character
         {
@@ -91,7 +112,8 @@ public class AppDbContext : DbContext
             Name = "Sparxie",
             PlanetId = 3,
             Rating = 1,
-            ElementId = 2
+            ElementId = 2,
+            PathId = 8
         },
         new Character
         {
@@ -99,11 +121,16 @@ public class AppDbContext : DbContext
             Name = "Fugue",
             PlanetId = 4,
             Rating = 7,
-            ElementId = 2
+            ElementId = 2,
+            PathId = 5
         }
         );
     }
     public DbSet<Character> Characters => Set<Character>();
     public DbSet<Planet> Planets => Set<Planet>(); // asa cream tabele
     public DbSet<Element> Elements => Set<Element>();
+
+    public DbSet<Path> Paths => Set<Path>();
+
+    public DbSet<Lightcone> Lightcones => Set<Lightcone>();
 }

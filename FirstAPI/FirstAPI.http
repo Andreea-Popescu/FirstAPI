@@ -50,3 +50,8 @@ Accept: application/json
 
 GET {{rootURL}}/api/character/planets
 Accept: application/json
+
+###
+
+GET {{rootURL}}/api/lightcone
+Accept: application/json

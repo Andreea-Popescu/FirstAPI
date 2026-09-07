@@ -6,4 +6,6 @@ public class CreateCharacterDTO
     public int Rating { get; set; }
     public int planetId { get; set; }
     public int ElementId {get; set; }
+
+    public int PathId {get; set;}
 }
