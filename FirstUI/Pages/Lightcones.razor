@@ -5,6 +5,14 @@
 
 <h1>Hello, again!</h1>
 
+    <div class="mb-4" style="max-width: 400px;">
+    <input type="text" 
+           class="form-control" 
+           placeholder="Caută un lightcone după nume..." 
+           @bind="searchTerm" 
+           @bind:event="oninput" />
+    </div>
+
 @if (lightcones == null)
 {
     <p><em>Se încarcă datele...</em></p>
@@ -12,11 +20,14 @@
 else
 {
     <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px;">
-        @foreach (var lc in lightcones)
+        @foreach (var lc in FilteredLightcones)
         {
             <div style="border: 1px solid #ddd; border-radius: 10px; padding: 16px; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background-color: #fff;">
                 <h3 style="margin-top: 0;">@lc.Name</h3> 
-                <p><strong>Rarity:</strong> @lc.Rarity</p>
+                <p><strong>Rarity:</strong>
+                <span class="@GetRarityColorClass(lc.Rarity)">
+                        @GetStars(lc.Rarity)
+                </span> @lc.Rarity </p>
                 <p><strong>Path:</strong> @lc.PathName</p>
                 <p><strong>Base Atk:</strong> @lc.BaseAtk</p>
                 <div style="margin-top: 12px;">
@@ -33,7 +44,15 @@ else
 
 
 @code {
-    private List<LightconeResponseDTO>? lightcones; // 
+    private List<LightconeResponseDTO>? lightcones; 
+
+    private string searchTerm = null!;
+
+    private IEnumerable<LightconeResponseDTO> FilteredLightcones =>
+        string.IsNullOrWhiteSpace(searchTerm)
+            ? lightcones ?? Enumerable.Empty<LightconeResponseDTO>()
+            : lightcones?.Where(c => c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) 
+              ?? Enumerable.Empty<LightconeResponseDTO>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -56,4 +75,13 @@ else
             lightcones?.RemoveAll(lc => lc.Id == id);
         }
     }
+
+    private string GetStars(int rarity) => new string('★', rarity);
+
+    private string GetRarityColorClass(int rarity) => rarity switch
+{
+    5 => "text-warning",   // Galben/Auriu
+    4 => "text-primary", 
+    _ => "text-secondary"  
+};
 }

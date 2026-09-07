@@ -5,6 +5,14 @@
 
 <h1>Hello, world!</h1>
 
+<div class="mb-4" style="max-width: 400px;">
+    <input type="text" 
+           class="form-control" 
+           placeholder="Caută un personaj după nume..." 
+           @bind="searchTerm" 
+           @bind:event="oninput" />
+</div>
+
 @if (characters == null)
 {
     <p><em>Se încarcă datele...</em></p>
@@ -12,7 +20,7 @@
 else
 {
     <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px;">
-        @foreach (var c in characters)
+        @foreach (var c in FilteredCharacters)
         {
             <div style="border: 1px solid #ddd; border-radius: 10px; padding: 16px; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background-color: #fff;">
                 <h3 style="margin-top: 0;">@c.Name</h3> 
@@ -34,7 +42,15 @@ else
 }
 
 @code {
-    private List<CharacterResponseDTO>? characters; // ? pt ca la inceput e goala
+    private List<CharacterResponseDTO>? characters; 
+    
+    private string searchTerm = null!; // in variabila asta tinem minte ce tasteaza utilizatorul
+
+    private IEnumerable<CharacterResponseDTO> FilteredCharacters =>
+        string.IsNullOrWhiteSpace(searchTerm)
+            ? characters ?? Enumerable.Empty<CharacterResponseDTO>()
+            : characters?.Where(c => c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) 
+              ?? Enumerable.Empty<CharacterResponseDTO>();
 
     protected override async Task OnInitializedAsync() // THIS ONE IDK
     {
