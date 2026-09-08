@@ -20,6 +20,8 @@ namespace FirstAPI.models
 
         public int PathId {get; set;}
         public Path? Path {get; set;}
+
+        public string? ImageUrl {get; set; } // proprietate optionala cale imagine
     }
 }
 

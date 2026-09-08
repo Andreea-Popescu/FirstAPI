@@ -8,4 +8,6 @@ public class CreateCharacterDTO
     public int ElementId {get; set; }
 
     public int PathId {get; set;}
+
+    public string? ImageUrl { get; set; }
 }

@@ -1,6 +1,20 @@
 @using FirstUI.DTO
 
 <div class="card h-100 shadow-sm">
+    @if (!string.IsNullOrEmpty(Character.ImageUrl))
+    {
+        <img src="http://localhost:5095@(Character.ImageUrl)" 
+             class="card-img-top" 
+             alt="@Character.Name" 
+             style="height: 180px; object-fit: cover;" />
+    }
+    else
+    {
+        <!-- Imagine placeholder dacă personajul nu are poză setată -->
+        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+            <span class="text-muted">Fără imagine</span>
+        </div>
+    }
     <div class="card-body">
         <h5 class="card-title text-primary">@Character.Name</h5>
         <h6 class="card-subtitle mb-2 text-muted">@Character.PathName • @Character.ElementName</h6>

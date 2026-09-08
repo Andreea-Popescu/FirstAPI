@@ -42,6 +42,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Servire fisiere statice din wwwroot folder
+app.UseStaticFiles();
+
 app.UseAuthorization();
 
 app.MapControllers();

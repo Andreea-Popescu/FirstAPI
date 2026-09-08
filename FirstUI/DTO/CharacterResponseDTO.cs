@@ -11,4 +11,6 @@ public class CharacterResponseDTO
         public int Rating { get; set; }
         public string ElementName {get; set;} = null!;
         public string PathName {get; set;} = null!;
+
+        public string? ImageUrl { get; set; }
 } // same structure ca la firstapi pt ca blazor trb sa stie cum sa despacheteze jsonu de la api (de aia avem iar dtos aici)

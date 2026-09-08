@@ -34,7 +34,8 @@ public class CharacterController : ControllerBase
             Rating = character.Rating,
             planetId = character.PlanetId,
             ElementId = character.ElementId,
-            PathId = character.PathId
+            PathId = character.PathId,
+            ImageUrl = character.ImageUrl
         };
 
         return Ok(dto);
@@ -71,6 +72,7 @@ public class CharacterController : ControllerBase
         }
 
         // 3. Actualizează câmpurile entității existente cu datele din DTO
+        character.ImageUrl = updatedCharacter.ImageUrl;
         character.Name = updatedCharacter.Name;
         character.Rating = updatedCharacter.Rating;
         character.PlanetId = updatedCharacter.planetId;
@@ -122,6 +124,7 @@ public async Task <ActionResult<CharacterResponseDTO>> ShowDetailsCharacter(int 
         // rezultatul final id-ul caracterului si caracterele planetei de unde vine, ca sa facem asta, transformam obiectu in DTO
         var response = new CharacterResponseDTO
         {
+            ImageUrl = character.ImageUrl,
             Name = character.Name,
             Rating = character.Rating,
             Planet = character.Planet == null ? null : new PlanetResponseDTO // operatoru ternar, daca exista planeta o transforma in obiect dto nice
@@ -152,7 +155,8 @@ public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
         Name = character.Name,
         Rating = character.Rating,
         ElementName = character.Element != null ? character.Element.Name : "Necunoscut",   
-        PathName = character.Path != null ? character.Path.Name : "Unknown",     
+        PathName = character.Path != null ? character.Path.Name : "Unknown",   
+        ImageUrl = character.ImageUrl,  
         Planet = character.Planet == null ? null : new PlanetResponseDTO
         {
             Name = character.Planet.Name,
@@ -187,6 +191,7 @@ public async Task<ActionResult<CharacterResponseDTO>> CreateCharacter (CreateCha
 
         var newCharacter = new Character // cream un nou ob caracter cu atributele date de user
         {
+            ImageUrl = request.ImageUrl,
             Name = request.Name,
             Rating = request.Rating,
             PlanetId = request.planetId,

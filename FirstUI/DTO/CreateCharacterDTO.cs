@@ -18,6 +18,8 @@ public class CreateCharacterDTO
 
     [Range(1, int.MaxValue, ErrorMessage = "Selectează un Path.")]
     public int PathId { get; set; }
+
+    public string? ImageUrl { get; set; }
 }
 
 

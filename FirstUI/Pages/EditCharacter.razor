@@ -4,13 +4,16 @@
 
 <h3>Editează Personajul</h3>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+
 @if (isLoading)
 {
     <p>Se încarcă datele...</p>
-}
-else if (errorMessage != null)
-{
-    <div class="alert alert-danger">@errorMessage</div>
 }
 else
 {
@@ -75,37 +78,96 @@ else
             </InputSelect>
         </div>
 
-        <button type="submit" class="btn btn-success">Salvează Modificările</button>
-        <a href="/" class="btn btn-secondary ms-2">Anulează</a>
+        <!-- Câmpul Imagine -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Imagine Personaj:</label>
+            <InputFile class="form-control" OnChange="HandleFileSelected" accept=".jpg,.jpeg,.png,.webp" />
+            
+            @if (isUploading)
+            {
+                <p class="text-muted small mt-1">Se încarcă imaginea...</p>
+            }
+            @if (!string.IsNullOrEmpty(characterModel.ImageUrl))
+            {
+                <div class="mt-2">
+                    <img src="http://localhost:5095@(characterModel.ImageUrl)" 
+                         alt="Preview" 
+                         style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
+                </div>
+            }
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">Salvează Modificările</button>
+            <a href="/" class="btn btn-secondary ms-2">Anulează</a>
+        </div>
     </EditForm>
 }
 
-
-
-
 @code {
     [Parameter]
-    public int Id { get; set; } // Parametru de pagina, Blazor citeste id-ul din link si il stocheaza in aceasta variabila
-    private CreateCharacterDTO characterModel = new();
+    public int Id { get; set; }
 
+    private CreateCharacterDTO characterModel = new();
     private List<PlanetDTO>? planets;
     private List<ElementDTO>? elements;
+    private List<PathDTO>? paths;
     
-    private List <PathDTO>? paths;
     private bool isLoading = true;
+    private bool isUploading = false;
     private string? errorMessage;
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        isUploading = true;
+
+        try
+        {
+            var maxAllowedSize = 5 * 1024 * 1024;
+            using var stream = file.OpenReadStream(maxAllowedSize);
+            
+            using var content = new MultipartFormDataContent();
+            using var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+
+            content.Add(fileContent, "file", file.Name);
+
+            var response = await Http.PostAsync("http://localhost:5095/api/upload/character-image", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<UploadResult>();
+                if (result != null)
+                {
+                    characterModel.ImageUrl = result.Url;
+                }
+            }
+            else
+            {
+                errorMessage = "Eroare la încărcarea imaginii pe server.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Eroare fișier: {ex.Message}";
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // incarcam listele pt dropdowns
             planets = await Http.GetFromJsonAsync<List<PlanetDTO>>("http://localhost:5095/api/character/planets");
             elements = await Http.GetFromJsonAsync<List<ElementDTO>>("http://localhost:5095/api/character/elements");
             paths = await Http.GetFromJsonAsync<List<PathDTO>>("http://localhost:5095/api/lightcone/paths");
 
-
-            // incarcam personajul existent cu noul endpoint GET /api/character/id
             var existingCharacter = await Http.GetFromJsonAsync<CreateCharacterDTO>($"http://localhost:5095/api/character/{Id}");
 
             if (existingCharacter != null)
@@ -125,12 +187,10 @@ else
 
     private async Task HandleUpdate()
     {
-        // 1. Trimite cererea PUT cu datele actualizate către endpoint-ul din controller
         var response = await Http.PutAsJsonAsync($"http://localhost:5095/api/character/{Id}", characterModel);
 
         if (response.IsSuccessStatusCode)
         {
-            // 2. Dacă salvarea a reușit, redirecționează utilizatorul pe pagina principală
             Navigation.NavigateTo("/");
         }
         else
