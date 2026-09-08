@@ -1,45 +1,33 @@
-﻿@page "/"
-@inject HttpClient Http
+﻿    @page "/"
+    @inject HttpClient Http
 
-<PageTitle>Welcome to HSR!</PageTitle>
+    <PageTitle>Welcome to HSR!</PageTitle>
 
-<h1>Hello, world!</h1>
+    <h1>Hello, world!</h1>
 
-<div class="mb-4" style="max-width: 400px;">
+    <div class="mb-4" style="max-width: 400px;">
     <input type="text" 
            class="form-control" 
            placeholder="Caută un personaj după nume..." 
            @bind="searchTerm" 
            @bind:event="oninput" />
-</div>
+    </div>
 
-@if (characters == null)
-{
-    <p><em>Se încarcă datele...</em></p>
-}
-else
-{
-    <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px;">
+    @if (characters == null)
+    {
+        <p><em>Se încarcă datele...</em></p>
+    }
+    else
+    {
+        <div class="row">
         @foreach (var c in FilteredCharacters)
         {
-            <div style="border: 1px solid #ddd; border-radius: 10px; padding: 16px; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background-color: #fff;">
-                <h3 style="margin-top: 0;">@c.Name</h3> 
-                <p><strong>Element:</strong> @c.ElementName</p>
-                <p><strong>Path:</strong> @c.PathName</p>
-                <p><strong>Rating:</strong> ⭐ @c.Rating / 100</p>
-                <hr style="border: 0; border-top: 1px solid #eee;" />
-                <p style="margin-bottom: 4px;"><strong>Planetă:</strong> @(c.Planet?.Name ?? "Necunoscută")</p>
-                <small style="color: #666;">@(c.Planet?.Description ?? "Fără descriere")</small>
-                <div style="margin-top: 12px;">
-                <button class="btn btn-danger" @onclick="() => DeleteCharacter(c.Id)">Șterge</button>
-                </div>
-                <div style="margin-top: 12px;">
-                <a href="/edit-character/@c.Id" class="btn btn-primary">Editează</a>
-                </div>
+            <div class="col-md-4 col-sm-6 mb-4" @key="c.Id">
+                <CharacterCard Character="c" OnDelete="DeleteCharacter" />
             </div>
         }
-    </div>
-}
+        </div>
+    }
 
 @code {
     private List<CharacterResponseDTO>? characters; 

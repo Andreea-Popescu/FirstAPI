@@ -19,26 +19,14 @@
 }
 else
 {
-    <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px;">
-        @foreach (var lc in FilteredLightcones)
+    <div class="row">
+        @foreach (var l in FilteredLightcones)
         {
-            <div style="border: 1px solid #ddd; border-radius: 10px; padding: 16px; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background-color: #fff;">
-                <h3 style="margin-top: 0;">@lc.Name</h3> 
-                <p><strong>Rarity:</strong>
-                <span class="@GetRarityColorClass(lc.Rarity)">
-                        @GetStars(lc.Rarity)
-                </span> @lc.Rarity </p>
-                <p><strong>Path:</strong> @lc.PathName</p>
-                <p><strong>Base Atk:</strong> @lc.BaseAtk</p>
-                <div style="margin-top: 12px;">
-                <button class="btn btn-danger" @onclick="() => DeleteLightcone(lc.Id)">Șterge</button>
-                </div>
-                <div style="margin-top: 12px;">
-                <a href="/edit-lightcone/@lc.Id" class="btn btn-primary">Editează</a>
-                </div>
+            <div class="col-md-4 col-sm-6 mb-4" @key="l.Id">
+                <LightconeCard Lightcone="l" OnDelete="DeleteLightcone" />
             </div>
         }
-    </div>
+        </div>
 }
 
 

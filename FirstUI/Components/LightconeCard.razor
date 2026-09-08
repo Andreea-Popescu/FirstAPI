@@ -1,0 +1,47 @@
+@using FirstUI.DTO
+
+<div class="card h-100 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title text-primary">@Lightcone.Name</h5>
+        <h6 class="card-subtitle mb-2 text-muted">@Lightcone.Rarity</h6>
+        
+        <p class="card-text mb-1">
+            <strong>Base ATK:</strong> @Lightcone.BaseAtk
+        </p>
+
+        @if (Lightcone.PathName != null!)
+        {
+            <p class="card-text text-secondary small">
+                <strong>Path:</strong> @Lightcone.PathName
+            </p>
+        }
+    </div>
+    
+    <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between pb-3">
+        <a href="/edit-lightcone/@Lightcone.Id" class="btn btn-sm btn-outline-primary">
+            Editează
+        </a>
+        <button class="btn btn-sm btn-outline-danger" @onclick="HandleDelete">
+            Șterge
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] // indica faptul ca acea valoare vine din exterior (de la parinte)
+    [EditorRequired] // avertisment daca cineva fol componenta fara un personaj
+    public LightconeResponseDTO Lightcone { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set; } // ! Cardul nu apeleaza direct API-ul de stergere deoarece nu are valoriloe
+                                                    // din home.razor, EventCallback anunta pagina parinte ca s-a cerut stergerea caracterului
+                                                    // iar in home.razor ondelete va apela task-ul delete character
+
+    private async Task HandleDelete()
+    {
+        if (OnDelete.HasDelegate)
+        {
+            await OnDelete.InvokeAsync(Lightcone.Id); // declanseaza event-ul si trimite ID-ul catre metoda din parinte
+        }
+    } // OBS! Folderu de componente trb declarat in _imports pt a putea fi folosit in orice pagina
+} 
