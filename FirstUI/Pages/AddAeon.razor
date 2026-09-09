@@ -35,6 +35,24 @@
         </InputSelect>
     </div>
 
+    <div class="mb-3" style="max-width: 320px;">
+    <label class="form-label">Imagine Personaj:</label>
+    <InputFile class="form-control" OnChange="HandleFileSelected" accept=".jpg,.jpeg,.png,.webp" />
+    
+    @if (isUploading)
+    {
+        <p class="text-muted small mt-1">Se încarcă imaginea...</p>
+    }
+    @if (!string.IsNullOrEmpty(newAeon.ImageUrl))
+    {
+        <div class="mt-2">
+            <img src="http://localhost:5095@(newAeon.ImageUrl)" 
+                 alt="Preview" 
+                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
+        </div>
+    }
+</div>
+
     <button type="submit" class="btn btn-primary" style="padding: 8px 16px; cursor: pointer;">
         Salvează Aeon
     </button>
@@ -43,6 +61,10 @@
 @code {
     private CreateAeonDTO newAeon = new();
     private List <PathDTO>? path;
+    
+    private bool isUploading = false;
+
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,4 +99,51 @@
             Console.WriteLine($"Eroare HTTP: {ex.Message}");
         }
     }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+    var file = e.File;
+    if (file == null) return;
+
+    isUploading = true;
+
+    try
+    {
+        // Limităm dimensiunea fișierului citit în memorie (ex: max 5 MB)
+        var maxAllowedSize = 5 * 1024 * 1024;
+        using var stream = file.OpenReadStream(maxAllowedSize);
+        
+        // Pregătim pachetul multipart/form-data
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new StreamContent(stream);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+
+        content.Add(fileContent, "file", file.Name);
+
+        // Trimitem la API-ul de upload
+        var response = await Http.PostAsync("http://localhost:5095/api/upload/aeon-image", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<UploadResult>();
+            if (result != null)
+            {
+                // Salvăm URL-ul în DTO-ul personajului
+                newAeon.ImageUrl = result.Url;
+            }
+        }
+        else
+        {
+            errorMessage = "Eroare la încărcarea imaginii pe server.";
+        }
+    }
+    catch (Exception ex)
+    {
+        errorMessage = $"Eroare fișier: {ex.Message}";
+    }
+    finally
+    {
+        isUploading = false;
+    }
+}
 }

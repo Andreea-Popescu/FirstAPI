@@ -1,5 +1,6 @@
 ﻿    @page "/"
     @inject HttpClient Http
+    @inject IJSRuntime JS
 
     <PageTitle>Welcome to HSR!</PageTitle>
 
@@ -12,6 +13,13 @@
            @bind="searchTerm" 
            @bind:event="oninput" />
     </div>
+
+    <div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" id="favSwitch" @bind="showOnlyFavorites" />
+    <label class="form-check-label" for="favSwitch">
+        ❤️ Arată doar favoritele (@favoriteIds.Count)
+    </label>
+</div>
 
     <span class="badge bg-secondary"> @FilteredCharacters.Count()</span>
     @if (!FilteredCharacters.Any()) 
@@ -29,7 +37,7 @@
         @foreach (var c in FilteredCharacters)
         {
             <div class="col-md-4 col-sm-6 mb-4" @key="c.Id">
-                <CharacterCard Character="c" OnDelete="DeleteCharacter" />
+                <CharacterCard Character="c" OnDelete="DeleteCharacter" isFavorite = "favoriteIds.Contains(c.Id)" OnToggleFavorite="ToggleFavorite" />
             </div>
         }
         </div>
@@ -40,13 +48,19 @@
     
     private string searchTerm = null!; // in variabila asta tinem minte ce tasteaza utilizatorul
 
-    private IEnumerable<CharacterResponseDTO> FilteredCharacters =>
-        string.IsNullOrWhiteSpace(searchTerm)
-            ? characters ?? Enumerable.Empty<CharacterResponseDTO>()
-            : characters?.Where(c => c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) 
-              ?? Enumerable.Empty<CharacterResponseDTO>();
+    private IEnumerable<CharacterResponseDTO> FilteredCharacters {
+        get {
+            if (characters == null) return Enumerable.Empty<CharacterResponseDTO>(); // ne afis toate daca nu se cauta cv specific
 
-    protected override async Task OnInitializedAsync() // THIS ONE IDK
+            return characters.Where(c =>
+            (string.IsNullOrWhiteSpace(searchTerm) || c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            &&
+            (!showOnlyFavorites || favoriteIds.Contains(c.Id))
+            );
+        }
+    }
+
+    protected override async Task OnInitializedAsync() // in timpul incarcarii paginii pe ecran
     {
         try
         {
@@ -66,6 +80,47 @@
         {
             characters?.RemoveAll(c => c.Id == id);
         }
+    }
+
+    // Implementare LocalStorage
+    private HashSet<int> favoriteIds = new(); // Hashset - lista rapida de ID-uri unice
+                                                        // la pasul asta, tinem minte id-urile personajelor favorite
+
+    private bool showOnlyFavorites = false; // variabila bool pt bifa de "doar favorite", initial, e setata ca fals
+
+    private const string FavoritesKey = "hsr_favorite_characters"; // numele cheii sub care salvam in browser
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)
+    {
+        await LoadFavoritesFromBrowser();
+        StateHasChanged(); // reafisam pagina cu inimioarele incarcate
+    }
+}
+    // acum citim lista din memoria browser
+    private async Task LoadFavoritesFromBrowser(){
+        var json = await JS.InvokeAsync<string?>("localStorage.getItem", FavoritesKey); // aducem cheia salvata din browser
+        if (!string.IsNullOrEmpty(json)) {
+            var ids = System.Text.Json.JsonSerializer.Deserialize<List<int>>(json); // ia textul din browser, il converteste intr-o lista
+                                                                                            // C# si il depoziteaza in hashset-ul favoriteids
+            if (ids != null)
+            {
+                favoriteIds = new HashSet<int>(ids);
+            }
+        }
+    }
+
+    // comutarea de stare cand se apasa butonul: daca e favorit il scoate, daca nu e il adauga
+    private async Task ToggleFavorite (int characterId) {
+        if (favoriteIds.Contains(characterId)) {
+            favoriteIds.Remove(characterId);
+        } else {
+            favoriteIds.Add(characterId);
+        }
+
+        var json = System.Text.Json.JsonSerializer.Serialize(favoriteIds); // salvam noua lista in browser sub forma de TEXT json (serializare)
+        await JS.InvokeVoidAsync("localStorage.setItem", FavoritesKey, json); // trimiterea
     }
      
 }

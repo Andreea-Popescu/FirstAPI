@@ -16,7 +16,17 @@
         </div>
     }
     <div class="card-body">
-        <h5 class="card-title text-primary">@Character.Name</h5>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="card-title text-primary mb-0">@Character.Name</h5>
+
+            <!-- Butonul transparent cu inimioară -->
+            <button class="btn btn-link p-0 text-decoration-none" 
+            style="font-size: 1.3rem; line-height: 1;" 
+            @onclick="HandleFavoriteClick" 
+            title="Adaugă la favorite">
+            @(isFavorite ? "❤️" : "🤍")
+            </button>
+        </div>
         <h6 class="card-subtitle mb-2 text-muted">@Character.PathName • @Character.ElementName</h6>
         
         <p class="card-text mb-1">
@@ -58,4 +68,16 @@
             await OnDelete.InvokeAsync(Character.Id); // declanseaza event-ul si trimite ID-ul catre metoda din parinte
         }
     } // OBS! Folderu de componente trb declarat in _imports pt a putea fi folosit in orice pagina
+
+    [Parameter]
+    public bool isFavorite {get; set;}
+
+    [Parameter]
+    public EventCallback<int> OnToggleFavorite {get; set;}
+
+    private async Task HandleFavoriteClick() {
+        if (OnToggleFavorite.HasDelegate) {
+            await OnToggleFavorite.InvokeAsync(Character.Id); // trimite la pagina parinte (home) sa se activeze togglefavorite
+        }
+    }
 } 
