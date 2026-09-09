@@ -13,6 +13,12 @@
            @bind:event="oninput" />
     </div>
 
+    <span class="badge bg-secondary"> @FilteredCharacters.Count()</span>
+    @if (!FilteredCharacters.Any()) 
+    {
+        <p class="text-muted mt-3">Nu a fost găsit niciun personaj cu acest nume.</p>
+    }
+
     @if (characters == null)
     {
         <p><em>Se încarcă datele...</em></p>

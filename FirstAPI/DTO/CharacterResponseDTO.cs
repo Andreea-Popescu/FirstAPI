@@ -1,5 +1,3 @@
-using FirstAPI.models;
-
 namespace FirstAPI.DTO;
 
 public class CharacterResponseDTO

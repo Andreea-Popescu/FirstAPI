@@ -1,0 +1,102 @@
+@page "/edit-aeon/{Id:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>Editează Aeon</h3>
+
+@if (isLoading)
+{
+    <p>Se încarcă datele...</p>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    <EditForm Model="AeonModel" OnValidSubmit="HandleUpdate">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <!-- Câmpul Nume -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Nume:</label>
+            <InputText class="form-control" @bind-Value="AeonModel.Name" />
+        </div>
+
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Description:</label>
+            <InputText class="form-control" @bind-Value="AeonModel.Description" />
+        </div>
+
+        <!-- Dropdown path -->
+        <div class="mb-3" style="max-width: 320px;">
+            <label class="form-label">Path:</label>
+            <InputSelect class="form-control" @bind-Value="AeonModel.PathId">
+                <option value="0">-- Alege un path --</option>
+                @if (paths != null)
+                {
+                    @foreach (var p in paths)
+                    {
+                        <option value="@p.Id">@p.Name</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+
+
+        <button type="submit" class="btn btn-success">Salvează Modificările</button>
+        <a href="/" class="btn btn-secondary ms-2">Anulează</a>
+    </EditForm>
+}
+
+
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; } 
+    private CreateAeonDTO AeonModel = new();
+    private List <PathDTO>? paths;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            paths = await Http.GetFromJsonAsync<List<PathDTO>>("http://localhost:5095/api/aeon/paths");
+
+
+            var existingAeon = await Http.GetFromJsonAsync<CreateAeonDTO>($"http://localhost:5095/api/aeon/{Id}");
+
+            if (existingAeon != null)
+            {
+                AeonModel = existingAeon;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Eroare: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleUpdate()
+    {
+ 
+        var response = await Http.PutAsJsonAsync($"http://localhost:5095/api/aeon/{Id}", AeonModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/aeons");
+        }
+        else
+        {
+            errorMessage = "A apărut o problemă la actualizarea personajului.";
+        }
+    }
+}

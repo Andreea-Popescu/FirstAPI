@@ -14,6 +14,11 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Aeon>().HasData(
+            new Aeon {Id = 1, Name = "Nanook", Description = "We hate this one", PathId = 1},
+            new Aeon {Id = 2, Name = "Aha", Description = "They're feeling Elated", PathId = 8}
+        );
+
         modelBuilder.Entity<Element>().HasData(
             new Element { Id = 1, Name = "Physical" },
             new Element { Id = 2, Name = "Fire" },
@@ -133,4 +138,6 @@ public class AppDbContext : DbContext
     public DbSet<Path> Paths => Set<Path>();
 
     public DbSet<Lightcone> Lightcones => Set<Lightcone>();
+
+    public DbSet<Aeon> Aeons => Set<Aeon>();
 }

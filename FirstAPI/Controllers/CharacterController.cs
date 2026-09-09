@@ -145,7 +145,7 @@ public async Task<ActionResult<List<CharacterResponseDTO>>> GetCharacters()
     var characters = await _context.Characters
         .Include(c => c.Planet) // JOIN cu tabela Planets pentru toată lista
         .Include (c => c.Element) 
-        .Include (c => c.Path) // join cu tabela Paths (ob Pathh)
+        .Include (c => c.Path) // join cu tabela Paths (ob Path)
         .ToListAsync();
 
     // Mapăm fiecare personaj din listă către CharacterResponseDTO

@@ -1,0 +1,54 @@
+@using FirstUI.DTO
+
+<div class="card h-100 shadow-sm">
+    @if (!string.IsNullOrEmpty(Aeon.ImageUrl))
+    {
+        <img src="http://localhost:5095@(Aeon.ImageUrl)" 
+             class="card-img-top" 
+             alt="@Aeon.Name" 
+             style="height: 180px; object-fit: cover;" />
+    }
+    else
+    {
+        <!-- Imagine placeholder dacă personajul nu are poză setată -->
+        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+            <span class="text-muted">Fără imagine</span>
+        </div>
+    }
+    <div class="card-body">
+        <h5 class="card-title text-primary">@Aeon.Name</h5>
+        <h6 class="card-subtitle mb-2 text-muted">@Aeon.PathName</h6>
+        
+        <p class="card-text mb-1">
+            <strong>Description:</strong> @Aeon.Description
+        </p>
+    </div>
+    
+    <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between pb-3">
+        <a href="/edit-aeon/@Aeon.Id" class="btn btn-sm btn-outline-primary">
+            Editează
+        </a>
+        <button class="btn btn-sm btn-outline-danger" @onclick="HandleDelete">
+            Șterge
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] // indica faptul ca acea valoare vine din exterior (de la parinte)
+    [EditorRequired] // avertisment daca cineva fol componenta fara un personaj
+    public AeonResponseDTO Aeon { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set; } // ! Cardul nu apeleaza direct API-ul de stergere deoarece nu are valorile
+                                                    // din home.razor, EventCallback anunta pagina parinte ca s-a cerut stergerea caracterului
+                                                    // iar in home.razor ondelete va apela task-ul delete character
+
+    private async Task HandleDelete()
+    {
+        if (OnDelete.HasDelegate)
+        {
+            await OnDelete.InvokeAsync(Aeon.Id); // declanseaza event-ul si trimite ID-ul catre metoda din parinte
+        }
+    } // OBS! Folderu de componente trb declarat in _imports pt a putea fi folosit in orice pagina
+} 

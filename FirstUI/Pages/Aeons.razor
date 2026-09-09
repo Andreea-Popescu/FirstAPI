@@ -1,0 +1,67 @@
+@page "/aeons"
+@inject HttpClient Http
+
+<PageTitle>Aeons!</PageTitle>
+
+<h1>Hello, again x2!</h1>
+
+    <div class="mb-4" style="max-width: 400px;">
+    <input type="text" 
+           class="form-control" 
+           placeholder="Caută un Aeon după nume..." 
+           @bind="searchTerm" 
+           @bind:event="oninput" />
+    </div>
+
+@if (aeons == null)
+{
+    <p><em>Se încarcă datele...</em></p>
+}
+else
+{
+    <div class="row">
+        @foreach (var a in FilteredAeons)
+        {
+            <div class="col-md-4 col-sm-6 mb-4" @key="a.Id">
+                <AeonCard Aeon="a" OnDelete="DeleteAeon" />
+            </div>
+        }
+        </div>
+}
+
+
+
+@code {
+    private List<AeonResponseDTO>? aeons; 
+
+    private string searchTerm = null!;
+
+    private IEnumerable<AeonResponseDTO> FilteredAeons =>
+        string.IsNullOrWhiteSpace(searchTerm)
+            ? aeons ?? Enumerable.Empty<AeonResponseDTO>()
+            : aeons?.Where(c => c.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) 
+              ?? Enumerable.Empty<AeonResponseDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            aeons = await Http.GetFromJsonAsync<List<AeonResponseDTO>>("http://localhost:5095/api/aeon");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Eroare la apel API: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteAeon (int id)
+    {
+        var response = await Http.DeleteAsync($"http://localhost:5095/api/aeon/{id}");
+        if( response.IsSuccessStatusCode)
+        {
+            aeons?.RemoveAll(a => a.Id == id);
+        }
+    }
+
+}

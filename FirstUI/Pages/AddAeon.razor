@@ -1,0 +1,80 @@
+@page "/add-aeon"
+@using FirstUI.DTO
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Adaugă un Aeon</PageTitle>
+
+<h2>Adaugă un Aeon Nou</h2>
+
+<EditForm Model="@newAeon" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div style="margin-bottom: 12px; max-width: 320px;">
+        <label>Nume:</label>
+        <InputText class="form-control" @bind-Value="newAeon.Name" />
+    </div>
+
+    <div style="margin-bottom: 12px; max-width: 320px;">
+        <label>Description:</label>
+        <InputText class="form-control" @bind-Value="newAeon.Description" />
+    </div>
+
+    <div style="margin-bottom: 16px; max-width: 320px;">
+        <label>Path:</label>
+        <InputSelect class="form-control" @bind-Value="newAeon.PathId">
+            <option value="0">-- Alege un path --</option>
+            @if (path != null)
+            {
+                @foreach (var p in path)
+                {
+                    <option value="@p.Id">@p.Name</option>
+                }
+            }
+        </InputSelect>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="padding: 8px 16px; cursor: pointer;">
+        Salvează Aeon
+    </button>
+</EditForm>
+
+@code {
+    private CreateAeonDTO newAeon = new();
+    private List <PathDTO>? path;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            path = await Http.GetFromJsonAsync<List<PathDTO>>("http://localhost:5095/api/aeon/paths");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Eroare: {ex.Message}");
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("http://localhost:5095/api/aeon", newAeon);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Redirecționează utilizatorul înapoi pe pagina principală pentru a vedea cardul nou
+                Navigation.NavigateTo("/aeons");
+            }
+            else
+            {
+                Console.WriteLine("Eroare la salvare în API.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Eroare HTTP: {ex.Message}");
+        }
+    }
+}
