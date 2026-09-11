@@ -1,9 +1,15 @@
 using FirstAPI.Data;
+using FirstAPI.Services; // trb si el inclus in program.cs ca sa stie aplicatia cand cerem iservice
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddScoped<ICharacterService, CharacterService>(); // addscoped - la fiecare cerere http se creeaza o instanta
+                                                            // noua de characterservice care e removed cand cererea s-a term
+                                                            // aka impuscam bucatarul dupa ce ne gateste
+builder.Services.AddScoped<ILightconeService, LightconeService>();                                          
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

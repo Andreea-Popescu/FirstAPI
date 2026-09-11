@@ -14,4 +14,8 @@ public class CharacterResponseDTO
         public string PathName {get; set; } = null!;
 
         public string? ImageUrl { get; set; }
+
+        public int PlanetId { get; set; }
+        public int PathId { get; set; }
+        public int ElementId { get; set; }
 }

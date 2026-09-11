@@ -13,4 +13,7 @@ public class CharacterResponseDTO
         public string PathName {get; set;} = null!;
 
         public string? ImageUrl { get; set; }
+        public int PlanetId { get; set; }
+        public int PathId { get; set; }
+        public int ElementId { get; set; }
 } // same structure ca la firstapi pt ca blazor trb sa stie cum sa despacheteze jsonu de la api (de aia avem iar dtos aici)

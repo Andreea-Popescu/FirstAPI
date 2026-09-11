@@ -168,11 +168,18 @@ else
             elements = await Http.GetFromJsonAsync<List<ElementDTO>>("http://localhost:5095/api/character/elements");
             paths = await Http.GetFromJsonAsync<List<PathDTO>>("http://localhost:5095/api/lightcone/paths");
 
-            var existingCharacter = await Http.GetFromJsonAsync<CreateCharacterDTO>($"http://localhost:5095/api/character/{Id}");
+            var existingCharacter = await Http.GetFromJsonAsync<CharacterResponseDTO>($"http://localhost:5095/api/character/{Id}");
 
             if (existingCharacter != null)
             {
-                characterModel = existingCharacter;
+                characterModel = new CreateCharacterDTO{
+                    Name = existingCharacter.Name,
+                    Rating = existingCharacter.Rating,
+                    ImageUrl = existingCharacter.ImageUrl,
+                    PlanetId = existingCharacter.PlanetId,
+                    PathId = existingCharacter.PathId,
+                    ElementId = existingCharacter.ElementId
+                };
             }
         }
         catch (Exception ex)
