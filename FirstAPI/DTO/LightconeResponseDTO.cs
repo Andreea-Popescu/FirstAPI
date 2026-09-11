@@ -7,4 +7,5 @@ public class LightconeResponseDTO
         public int Rarity { get; set; }
         public int BaseAtk { get; set; }
         public string PathName {get; set; } = null!;
+        public int pathId {get; set;}
         }

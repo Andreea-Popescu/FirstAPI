@@ -34,7 +34,7 @@ public class CharacterService : ICharacterService
                 Name = c.Planet.Name,
                 Description = c.Planet.Description
             }
-        }).ToListAsync(); // diferenta tolist vs tolistasync?
+        }).ToListAsync(); 
     }
 
     public async Task<CharacterResponseDTO?> GetCharacterByIdAsync (int id)
