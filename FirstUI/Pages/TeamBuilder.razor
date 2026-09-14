@@ -1,0 +1,241 @@
+@page "/teambuilder"
+@using FirstUI.DTO
+@using FirstUI.Services
+@inject TeamStateService TeamService
+@inject HttpClient Http
+
+<PageTitle>Team Builder</PageTitle>
+
+<div class="container py-4">
+    <h2 class="mb-4 text-center fw-bold">Team Setup!</h2>
+
+    @if (!string.IsNullOrEmpty(feedbackMessage))
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @feedbackMessage
+            <button type="button" class="btn-close" @onclick="() => feedbackMessage = string.Empty"></button>
+        </div>
+    }
+
+    <!-- CELE 4 SLOTURI DE ECHIPĂ -->
+    <div class="row g-3 mb-5 justify-content-center">
+        @for (int i = 0; i < 4; i++)
+        {
+            int slotIdx = i;
+            var member = TeamService.Slots[slotIdx];
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="card h-100 shadow-sm border-2 @(selectedSlot == slotIdx ? "border-primary" : "border-secondary")">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-dark text-white">
+                        <span>Slot @(slotIdx + 1)</span>
+                        @if (member.Character != null)
+                        {
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => TeamService.RemoveCharacter(slotIdx)">✕</button>
+                        }
+                    </div>
+                    
+                    <div class="card-body text-center d-flex flex-column align-items-center justify-content-center">
+                        @if (member.Character != null)
+                        {
+                            <!-- Imagine Personaj -->
+                            <div class="position-relative mb-2">
+                            <img src="@GetFullImageUrl(member.Character.ImageUrl)" 
+                                class="rounded shadow" 
+                                style="width: 140px; height: 180px; object-fit: cover;" />
+                                <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-1">★ @member.Character.Rating</span>
+                            </div>
+                            <h5 class="fw-bold mb-1">@member.Character.Name</h5>
+                            <small class="text-muted mb-3">@member.Character.PathName | @member.Character.ElementName</small>
+
+                            <!-- Echipare Lightcone -->
+                            <div class="w-100 border-top pt-2 mt-auto">
+                                @if (member.EquippedLightcone != null)
+                                {
+                                    <div class="p-2 rounded bg-light border mb-2">
+                                        <div class="fw-semibold small text-primary">⚔️ @member.EquippedLightcone.Name</div>
+                                        <small class="text-muted d-block">ATK: @member.EquippedLightcone.BaseAtk</small>
+                                        <button class="btn btn-link btn-sm text-danger p-0" @onclick="() => TeamService.RemoveLightcone(slotIdx)">Scoate</button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-outline-primary btn-sm w-100 mb-2" 
+                                            @onclick="() => OpenLightconeSelector(slotIdx)">
+                                        + Echipează Lightcone
+                                    </button>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Slot Gol -->
+                            <div class="py-5 text-muted">
+                                <p class="mb-2">Slot Liber</p>
+                                <button class="btn btn-primary btn-sm" @onclick="() => OpenCharacterSelector(slotIdx)">
+                                    + Alege Personaj
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- ZONA DE SELECTARE (MODAL / PICKER) -->
+    @if (isSelectingCharacter)
+    {
+        <div class="card p-3 shadow-sm mb-4 border-primary">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Alege un personaj pentru Slotul @(selectedSlot + 1)</h5>
+                <button class="btn btn-sm btn-secondary" @onclick="CloseModals">Închide</button>
+            </div>
+            <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
+                @foreach (var c in allCharacters)
+                {
+                    <div class="col">
+                        <div class="card h-100 text-center p-2 cursor-pointer btn btn-outline-dark" 
+                             @onclick="() => SelectCharacter(c)">
+                            <!-- În selectorul de personaje -->
+                            <img src="@GetFullImageUrl(c.ImageUrl)" 
+                            class="card-img-top rounded" 
+                            style="height: 100px; object-fit: cover;" />   
+                            <div class="mt-2 small fw-bold">@c.Name</div>
+                            <small class="text-muted">@c.PathName</small>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (isSelectingLightcone)
+    {
+        var currentMember = TeamService.Slots[selectedSlot];
+        <div class="card p-3 shadow-sm mb-4 border-info">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">
+                    Alege un Lightcone pentru @currentMember.Character?.Name 
+                    <span class="badge bg-secondary">Calea: @currentMember.Character?.PathName</span>
+                </h5>
+                <button class="btn btn-sm btn-secondary" @onclick="CloseModals">Închide</button>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+                @foreach (var lc in allLightcones)
+                {
+                bool isCompatible = string.Equals(lc.PathName, currentMember.Character?.PathName, StringComparison.OrdinalIgnoreCase);
+
+                    <div class="col">
+                        <div class="card h-100 p-2 border @(isCompatible ? "border-success" : "border-danger opacity-50")">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">@lc.Name</h6>
+                                    <small class="d-block text-muted">Calea: @lc.PathName</small>
+                                    <small class="d-block text-muted">Raritate: ★@lc.Rarity | ATK: @lc.BaseAtk</small>
+                                </div>
+                                @if (isCompatible)
+                                {
+                                    <button class="btn btn-sm btn-success" @onclick="() => SelectLightcone(lc)">Echipează</button>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Incompatibil</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<CharacterResponseDTO> allCharacters = new();
+    private List<LightconeResponseDTO> allLightcones = new();
+    
+    private int selectedSlot = 0;
+    private bool isSelectingCharacter = false;
+    private bool isSelectingLightcone = false;
+    private string feedbackMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        TeamService.OnChange += StateHasChanged;
+
+        try
+        {
+            allCharacters = await Http.GetFromJsonAsync<List<CharacterResponseDTO>>("http://localhost:5095/api/character") ?? new();
+            allLightcones = await Http.GetFromJsonAsync<List<LightconeResponseDTO>>("http://localhost:5095/api/lightcone") ?? new();
+        }
+        catch (Exception ex)
+        {
+            feedbackMessage = $"Eroare la preluarea datelor: {ex.Message}";
+        }
+    }
+
+    private void OpenCharacterSelector(int slotIndex)
+    {
+        selectedSlot = slotIndex;
+        isSelectingLightcone = false;
+        isSelectingCharacter = true;
+    }
+
+    private void OpenLightconeSelector(int slotIndex)
+    {
+        selectedSlot = slotIndex;
+        isSelectingCharacter = false;
+        isSelectingLightcone = true;
+    }
+
+    private void SelectCharacter(CharacterResponseDTO character)
+    {
+        if (!TeamService.AddCharacterToSlot(selectedSlot, character, out string error))
+        {
+            feedbackMessage = error;
+        }
+        else
+        {
+            feedbackMessage = string.Empty;
+            isSelectingCharacter = false;
+        }
+    }
+
+    private void SelectLightcone(LightconeResponseDTO lightcone)
+    {
+        if (!TeamService.EquipLightcone(selectedSlot, lightcone, out string error))
+        {
+            feedbackMessage = error;
+        }
+        else
+        {
+            feedbackMessage = string.Empty;
+            isSelectingLightcone = false;
+        }
+    }
+
+    private void CloseModals()
+    {
+        isSelectingCharacter = false;
+        isSelectingLightcone = false;
+    }
+
+    private string GetFullImageUrl(string? imageUrl)
+{
+    if (string.IsNullOrWhiteSpace(imageUrl))
+    {
+        return "/images/placeholder.png"; // sau o imagine default
+    }
+
+    // Dacă imaginea e deja un link complet de pe net (https://...), o lăsăm așa
+    if (imageUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
+        imageUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+    {
+        return imageUrl;
+    }
+
+    // Altfel, adăugăm adresa de bază a API-ului
+    var cleanPath = imageUrl.TrimStart('/');
+    return $"http://localhost:5095/{cleanPath}";
+}
+}
