@@ -1,8 +1,13 @@
 using FirstUI.DTO;
+using System.Text.Json;
+using Microsoft.JSInterop;
 namespace FirstUI.Services;
 
 public class TeamStateService
 {
+    private readonly IJSRuntime _js;
+    private const string TeamStateKey = "teamState";
+
     // Echipa are fix 4 sloturi: 0,1,2,3
     public TeamMember[] Slots {get; } = new TeamMember[4]
     {
@@ -14,6 +19,35 @@ public class TeamStateService
 
     // Event pt a notifica componentele cand se schimba ceva in echipa
     public event Action? OnChange; // mecanism de notificare pentru schimbari in echipa
+
+    public TeamStateService(IJSRuntime js)
+    {
+        _js = js;
+    }
+
+    public async Task SaveStateAsync()
+    {
+        var json = JsonSerializer.Serialize(Slots);
+        // localStorage.setItem(cheie, valoare)
+        await _js.InvokeVoidAsync("localStorage.setItem", TeamStateKey, json);
+    }
+
+    public async Task LoadStateAsync()
+    {
+        var json = await _js.InvokeAsync<string>("localStorage.getItem", TeamStateKey);
+        if (!string.IsNullOrEmpty(json))
+        {
+            var loadedSlots = JsonSerializer.Deserialize<TeamMember[]>(json);
+            if (loadedSlots != null && loadedSlots.Length == 4)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    Slots[i] = loadedSlots[i];
+                }
+                NotifyStateChanged();
+            }
+        }
+    }
 
     public bool AddCharacterToSlot(int slotIndex, CharacterResponseDTO character, out string errorMessage)
     {
@@ -29,6 +63,7 @@ public class TeamStateService
         Slots[slotIndex].Character = character;
 
         NotifyStateChanged();
+        _ = SaveStateAsync(); // Salvăm starea echipei după adăugarea personajului
         return true;
     }
 
@@ -57,6 +92,7 @@ public class TeamStateService
 
         Slots[slotIndex].EquippedLightcone = lightcone;
         NotifyStateChanged();
+        _ = SaveStateAsync(); // Salvăm starea echipei după echiparea lightcone-ului
         return true;
     }  
 
@@ -65,13 +101,21 @@ public class TeamStateService
         Slots[slotIndex].Character = null;
         Slots[slotIndex].EquippedLightcone = null; // Daca stergem personajul, stergem si lightcone-ul
         NotifyStateChanged();
+        _ = SaveStateAsync();
     }
 
     public void RemoveLightcone(int slotIndex)
     {
         Slots[slotIndex].EquippedLightcone = null;
         NotifyStateChanged();
+        _ = SaveStateAsync();
     }
 
     private void NotifyStateChanged() => OnChange?.Invoke();
+
+    public int TotalTeamAtk => Slots
+    .Where (s => s.EquippedLightcone != null)
+    .Sum(s => s.EquippedLightcone!.BaseAtk);
+
+    public int ActiveMembersCount => Slots.Count(s => s.Character != null);
 }
