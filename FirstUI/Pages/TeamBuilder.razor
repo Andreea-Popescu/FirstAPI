@@ -124,6 +124,7 @@
                 @foreach (var lc in allLightcones)
                 {
                 bool isCompatible = string.Equals(lc.PathName, currentMember.Character?.PathName, StringComparison.OrdinalIgnoreCase);
+                bool isAlreadyEquipped = TeamService.Slots.Any(s => s.EquippedLightcone?.Id == lc.Id);
 
                     <div class="col">
                         <div class="card h-100 p-2 border @(isCompatible ? "border-success" : "border-danger opacity-50")">

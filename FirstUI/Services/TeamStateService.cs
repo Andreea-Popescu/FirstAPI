@@ -49,6 +49,12 @@ public class TeamStateService
             return false;
         }
 
+        if(Slots.Any(s => s.EquippedLightcone?.Id == lightcone.Id))
+        {
+            errorMessage = "Lightcone-ul este deja echipat într-un alt slot.";
+            return false;
+        }
+
         Slots[slotIndex].EquippedLightcone = lightcone;
         NotifyStateChanged();
         return true;
